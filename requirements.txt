@@ -1,0 +1,10 @@
+langchain-text-splitters 
+langchain 
+langchain-community 
+langchain-huggingface 
+langchain-ollama
+langchain-chroma 
+langchain-core
+chromadb 
+pypdf 
+ollama
