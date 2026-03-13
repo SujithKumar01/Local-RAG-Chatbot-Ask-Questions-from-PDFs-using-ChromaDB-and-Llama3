@@ -67,6 +67,7 @@ Local_RAG/
 ├── youtube_guidelines.pdf
 ├── chroma_db/                # Stored vector database
 ├── local_rag_with_langchainollama.ipynb            # Main RAG pipeline
+├── app.py
 ├── requirements.txt
 └── README.md
 ```
@@ -130,6 +131,10 @@ ollama run llama3
 Run the RAG system:
 ```
 Run the Code Blocks in the .ipynb file 
+
+or 
+
+streamlit run app.py
 ```
 
 Example interaction:
