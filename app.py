@@ -6,29 +6,37 @@ from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-from regex import cache_all
+
 import streamlit as st
 
 
 st.title("Local RAG chatbot")
 st.write("Ask questions from your PDF document.")
 
-loader = PyPDFLoader("./youtube_guidelines.pdf")
-documents= loader.load()
+@st.cache_resource
+def load_rag_pipeline():
+    loader = PyPDFLoader("./youtube_guidelines.pdf")
+    documents= loader.load()
 
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
-chunks = text_splitter.split_documents(documents)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    chunks = text_splitter.split_documents(documents)
 
-embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en")
+    embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en")
 
-vectorstore= Chroma.from_documents(documents = chunks,
-                                   embedding = embeddings,
-                                   persist_directory = "./chroma_db",
-                                   collection_name="youtube_guidelines")
+    vectorstore= Chroma.from_documents(documents = chunks,
+                                    embedding = embeddings,
+                                    persist_directory = "./chroma_db",
+                                    collection_name="resume_collection")
 
-retriever = vectorstore.as_retriever(search_kwargs={'k':3})
+    retriever = vectorstore.as_retriever(search_kwargs={'k':3})
 
-llm= OllamaLLM(model="llama3")
+    llm= OllamaLLM(model="llama3")
+    
+    return retriever, llm
+
+
+retriever, llm = load_rag_pipeline()
+
 
 prompt = ChatPromptTemplate.from_template(
     """
@@ -56,5 +64,7 @@ rag_chain = (
 
 question = st.text_input("Ask a question about the document: ")
 if question:
-    answer = rag_chain.invoke(question)
-    st.write("Answer: ", answer)
+    with st.spinner("Thinking..."):
+        response = rag_chain.invoke(question)
+        st.text(response)
+    
